@@ -1,69 +1,299 @@
-import Image from "next/image";
-
+"use client";
+import { useMemo, useState } from "react";
+const fmt = (n: number) =>
+  new Intl.NumberFormat("th-TH", { maximumFractionDigits: 0 }).format(n);
+type Expense = { name: string; amount: string; paidBy: string };
 export default function Home() {
+  const [members, setMembers] = useState(["คุณ", "มิน", "แพรว"]);
+  const [distance, setDistance] = useState("480");
+  const [efficiency, setEfficiency] = useState("14");
+  const [fuelPrice, setFuelPrice] = useState("36.5");
+  const [expenses, setExpenses] = useState<Expense[]>([
+    { name: "ที่พัก", amount: "2400", paidBy: "คุณ" },
+    { name: "ทางด่วน", amount: "320", paidBy: "มิน" },
+  ]);
+  const fuel =
+    ((Number(distance) || 0) / (Number(efficiency) || 1)) *
+    (Number(fuelPrice) || 0);
+  const extra = expenses.reduce((s, x) => s + (Number(x.amount) || 0), 0);
+  const total = fuel + extra;
+  const share = members.length ? total / members.length : 0;
+  const paid = useMemo(
+    () =>
+      Object.fromEntries(
+        members.map((m) => [
+          m,
+          expenses
+            .filter((x) => x.paidBy === m)
+            .reduce((s, x) => s + (Number(x.amount) || 0), 0),
+        ]),
+      ),
+    [members, expenses],
+  );
+  const addMember = () =>
+    setMembers([...members, `คนที่ ${members.length + 1}`]);
+  const addExpense = () =>
+    setExpenses([
+      ...expenses,
+      { name: "ค่าใช้จ่ายใหม่", amount: "0", paidBy: members[0] || "คุณ" },
+    ]);
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
+    <main className="shell">
+      <div className="wrap">
+        <nav className="topbar">
+          <div className="brand">
+            <span>ROAMLY</span>
+          </div>
+          <span className="toplink">ทริปนี้ หารกันแฟร์กว่าเดิม</span>
+        </nav>
+        <section className="hero">
+          <div className="eyebrow">Trip splitter / 05</div>
+          <h1>
+            ออกทริปให้สนุก
+            <br />
+            หารง่ายไม่ต้องทวง
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p>
+            รวมค่าน้ำมัน ค่าใช้จ่ายต่าง ๆ
+            และสรุปยอดที่แต่ละคนควรจ่ายในมุมมองเดียว
           </p>
+        </section>
+        <div className="grid">
+          <section className="card">
+            <h2>รายละเอียดทริป</h2>
+            <div className="form-grid">
+              <label className="field full">
+                <span className="label">
+                  ระยะทางรวม <small>(กิโลเมตร)</small>
+                </span>
+                <input
+                  className="input"
+                  type="number"
+                  min="0"
+                  value={distance}
+                  onChange={(e) => setDistance(e.target.value)}
+                />
+              </label>
+              <label className="field">
+                <span className="label">
+                  อัตราสิ้นเปลือง <small>(กม./ลิตร)</small>
+                </span>
+                <input
+                  className="input"
+                  type="number"
+                  min="1"
+                  value={efficiency}
+                  onChange={(e) => setEfficiency(e.target.value)}
+                />
+              </label>
+              <label className="field">
+                <span className="label">
+                  ราคาน้ำมัน <small>(บาท/ลิตร)</small>
+                </span>
+                <input
+                  className="input"
+                  type="number"
+                  min="0"
+                  value={fuelPrice}
+                  onChange={(e) => setFuelPrice(e.target.value)}
+                />
+              </label>
+            </div>
+            <div className="metric-row" style={{ marginTop: 20 }}>
+              <span>ค่าน้ำมันรวม</span>
+              <strong>฿{fmt(fuel)}</strong>
+            </div>
+            <div
+              style={{
+                marginTop: 20,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <h2 style={{ margin: 0 }}>สมาชิก ({members.length})</h2>
+              <button className="button ghost" onClick={addMember}>
+                + เพิ่มคน
+              </button>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 8,
+                marginTop: 12,
+              }}
+            >
+              {members.map((m, i) => (
+                <div
+                  key={i}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    background: "#202635",
+                    borderRadius: 99,
+                    padding: "7px 10px",
+                    fontSize: 13,
+                  }}
+                >
+                  {m}
+                  {members.length > 1 && (
+                    <button
+                      onClick={() =>
+                        setMembers(members.filter((_, j) => j !== i))
+                      }
+                      style={{
+                        border: 0,
+                        background: "none",
+                        color: "#929bad",
+                        cursor: "pointer",
+                      }}
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+          <section className="card result">
+            <div className="result-main">
+              <div className="result-label">ค่าใช้จ่ายรวมทั้งทริป</div>
+              <div className="big-number">฿{fmt(total)}</div>
+              <span className="badge">เฉลี่ยคนละ ฿{fmt(share)}</span>
+            </div>
+            <div>
+              <div className="metric-row">
+                <span>ค่าน้ำมัน</span>
+                <strong>฿{fmt(fuel)}</strong>
+              </div>
+              <div className="metric-row">
+                <span>ค่าใช้จ่ายอื่น ๆ</span>
+                <strong>฿{fmt(extra)}</strong>
+              </div>
+            </div>
+          </section>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        <section className="card" style={{ marginTop: 18 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 12,
+            }}
           >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <h2 style={{ margin: 0 }}>ค่าใช้จ่ายอื่น ๆ</h2>
+            <button className="button ghost" onClick={addExpense}>
+              + เพิ่มรายการ
+            </button>
+          </div>
+          <div className="table-wrap">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>รายการ</th>
+                  <th>จำนวนเงิน</th>
+                  <th>ผู้จ่าย</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {expenses.map((x, i) => (
+                  <tr key={i}>
+                    <td>
+                      <input
+                        className="input"
+                        value={x.name}
+                        onChange={(e) => {
+                          const a = [...expenses];
+                          a[i] = { ...a[i], name: e.target.value };
+                          setExpenses(a);
+                        }}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        className="input"
+                        type="number"
+                        value={x.amount}
+                        onChange={(e) => {
+                          const a = [...expenses];
+                          a[i] = { ...a[i], amount: e.target.value };
+                          setExpenses(a);
+                        }}
+                      />
+                    </td>
+                    <td>
+                      <select
+                        className="select"
+                        value={x.paidBy}
+                        onChange={(e) => {
+                          const a = [...expenses];
+                          a[i] = { ...a[i], paidBy: e.target.value };
+                          setExpenses(a);
+                        }}
+                      >
+                        {members.map((m) => (
+                          <option key={m}>{m}</option>
+                        ))}
+                      </select>
+                    </td>
+                    <td>
+                      <button
+                        className="button ghost"
+                        onClick={() =>
+                          setExpenses(expenses.filter((_, j) => j !== i))
+                        }
+                      >
+                        ลบ
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <section className="card" style={{ marginTop: 18 }}>
+          <h2>สรุปยอดแต่ละคน</h2>
+          <div className="table-wrap">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>สมาชิก</th>
+                  <th>จ่ายไปแล้ว</th>
+                  <th>ควรจ่าย</th>
+                  <th>สถานะ</th>
+                </tr>
+              </thead>
+              <tbody>
+                {members.map((m) => {
+                  const balance = (paid[m] || 0) - share;
+                  return (
+                    <tr key={m}>
+                      <td>{m}</td>
+                      <td>฿{fmt(paid[m] || 0)}</td>
+                      <td>฿{fmt(share)}</td>
+                      <td
+                        style={{ color: balance >= 0 ? "#67cf9a" : "#f1ba63" }}
+                      >
+                        {balance >= 0
+                          ? `รับคืน ฿${fmt(balance)}`
+                          : `จ่ายเพิ่ม ฿${fmt(-balance)}`}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <div className="footer">
+          สรุปจากข้อมูลที่กรอก ณ ตอนนี้ · แนะนำให้เคลียร์ยอดกันก่อนจบทริป
         </div>
-      </main>
-    </div>
+      </div>
+    </main>
   );
 }
