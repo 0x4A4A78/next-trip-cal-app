@@ -130,6 +130,7 @@ export default function Home() {
               {members.map((m, i) => (
                 <div
                   key={i}
+                  className="text-white"
                   style={{
                     display: "flex",
                     alignItems: "center",
