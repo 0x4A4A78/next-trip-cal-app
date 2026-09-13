@@ -3,6 +3,8 @@ import { useMemo, useState } from "react";
 const fmt = (n: number) =>
   new Intl.NumberFormat("th-TH", { maximumFractionDigits: 0 }).format(n);
 type Expense = { name: string; amount: string; paidBy: string };
+<svg className="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="m15.5 8.5-2 5-5 2 2-5 5-2Z"/><path d="M12 4v2M20 12h-2M12 20v-2M4 12h2"/></svg>
+
 export default function Home() {
   const [members, setMembers] = useState(["คุณ", "มิน", "แพรว"]);
   const [distance, setDistance] = useState("480");
@@ -42,6 +44,7 @@ export default function Home() {
       <div className="wrap">
         <nav className="topbar">
           <div className="brand">
+            <svg className="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="m15.5 8.5-2 5-5 2 2-5 5-2Z"/><path d="M12 4v2M20 12h-2M12 20v-2M4 12h2"/></svg>
             <span>ROAMLY</span>
           </div>
           <span className="toplink">ทริปนี้ หารกันแฟร์กว่าเดิม</span>
